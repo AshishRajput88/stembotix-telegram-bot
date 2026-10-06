@@ -1,0 +1,16 @@
+{
+  "name": "stembotix-telegram-ai-bot",
+  "version": "1.0.0",
+  "description": "Telegram AI Review Auto-Assign Bot for STEMbotix. Send any PDF/Word/Excel/Text document on Telegram to automatically parse and assign reviews in Firebase.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0",
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.6.0",
+    "xlsx": "^0.18.5",
+    "dotenv": "^16.4.5"
+  }
+}

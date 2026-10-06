@@ -1,0 +1,101 @@
+[
+  {
+    "id": "embedded",
+    "name": "Embedded",
+    "members": [
+      { "slug": "maharshi-patel", "name": "Maharshi Patel", "role": "Department Head" },
+      { "slug": "pruthviraj", "name": "Pruthviraj", "role": "Team Member" },
+      { "slug": "milan", "name": "Milan", "role": "Team Member" },
+      { "slug": "jay-barot", "name": "Jay Barot", "role": "Team Member" },
+      { "slug": "dhruvil-usdad", "name": "Dhruvil Usdad", "role": "Team Member" },
+      { "slug": "vaibhavi", "name": "Vaibhavi", "role": "Team Member" },
+      { "slug": "anirudh", "name": "Anirudh", "role": "Team Member" },
+      { "slug": "jagruti", "name": "Jagruti", "role": "Team Member" },
+      { "slug": "divyesh", "name": "Divyesh", "role": "Team Member" }
+    ]
+  },
+  {
+    "id": "production",
+    "name": "Production",
+    "members": [
+      { "slug": "ujwal", "name": "Ujwal", "role": "Department Head" },
+      { "slug": "raj", "name": "Raj", "role": "Team Member" },
+      { "slug": "vikash", "name": "Vikash", "role": "Team Member" },
+      { "slug": "vipul", "name": "Vipul", "role": "Team Member" },
+      { "slug": "chintan", "name": "Chintan", "role": "Team Member" },
+      { "slug": "vishnu", "name": "Vishnu", "role": "Team Member" },
+      { "slug": "sagar", "name": "Sagar", "role": "Team Member" }
+    ]
+  },
+  {
+    "id": "soldering",
+    "name": "Soldering",
+    "members": [
+      { "slug": "ujwal", "name": "Ujwal", "role": "Department Head" },
+      { "slug": "gaurav-kumar", "name": "Gaurav Kumar", "role": "Department Head" },
+      { "slug": "mahesh", "name": "Mahesh", "role": "Team Member" },
+      { "slug": "nilesh", "name": "Nilesh", "role": "Team Member" },
+      { "slug": "rakesh", "name": "Rakesh", "role": "Team Member" }
+    ]
+  },
+  {
+    "id": "purchase",
+    "name": "Purchase",
+    "members": [
+      { "slug": "gordhan-bhai", "name": "Gordhan Bhai", "role": "Purchase Team" },
+      { "slug": "deepak-bhai", "name": "Deepak Bhai", "role": "Purchase Team" },
+      { "slug": "janak-joshi", "name": "Janak Joshi", "role": "Purchase Team" }
+    ]
+  },
+  {
+    "id": "ai-ml",
+    "name": "AI & ML",
+    "members": [
+      { "slug": "shubhansh", "name": "Shubhansh", "role": "Team Member" },
+      { "slug": "janvi", "name": "Janvi", "role": "Team Member" }
+    ]
+  },
+  {
+    "id": "software-lms",
+    "name": "Software & LMS",
+    "members": [
+      { "slug": "nisha", "name": "Nisha", "role": "Department Head" },
+      { "slug": "riddhi", "name": "Riddhi", "role": "Software Team" },
+      { "slug": "mahek", "name": "Mahek", "role": "Software Team" },
+      { "slug": "jaimin", "name": "Jaimin", "role": "Software Team" },
+      { "slug": "ritika", "name": "Ritika", "role": "Software Team" },
+      { "slug": "jay-soneri", "name": "Jay Soneri", "role": "Software Team" },
+      { "slug": "mahendra", "name": "Mahendra", "role": "Software Team" },
+      { "slug": "pratham", "name": "Pratham", "role": "LMS Team" },
+      { "slug": "tisha", "name": "Tisha", "role": "LMS Team" }
+    ]
+  },
+  {
+    "id": "drone-arvr",
+    "name": "Drone & AR/VR",
+    "members": [
+      { "slug": "pulkit-bhai", "name": "Pulkit Bhai", "role": "Drone Team" },
+      { "slug": "sarbeshwar", "name": "Sarbeshwar", "role": "Drone Team" },
+      { "slug": "lijin-joseph", "name": "Lijin Joseph", "role": "AR/VR Team" }
+    ]
+  },
+  {
+    "id": "product-design",
+    "name": "Product Designing",
+    "members": [
+      { "slug": "prutha", "name": "Prutha", "role": "Department Head" },
+      { "slug": "ruchita", "name": "Ruchita", "role": "Team Member" },
+      { "slug": "anuja", "name": "Anuja", "role": "Team Member" },
+      { "slug": "bhavika", "name": "Bhavika", "role": "Team Member" },
+      { "slug": "yukta", "name": "Yukta", "role": "Team Member" }
+    ]
+  },
+  {
+    "id": "graphics-design",
+    "name": "Graphics Designing & UI/UX",
+    "members": [
+      { "slug": "divy", "name": "Divy", "role": "Team Member" },
+      { "slug": "azam", "name": "Azam", "role": "Team Member" }
+    ]
+  }
+]

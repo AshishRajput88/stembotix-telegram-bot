@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: stembotix-telegram-ai-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node bot.js
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        value: 8707660670:AAFGMXFYtCKmS7ziBHEVhxi9c342G-AUqJE
+      - key: FIREBASE_PROJECT_ID
+        value: stembotix-riview-system
+      - key: FIREBASE_API_KEY
+        value: AIzaSyDByqhHIqHzxXNVEp8lmLKcUuEW4Jv18R0
+      - key: LIVE_DIRECTORY_URL
+        value: https://stembotix-riview-system.firebaseapp.com
