@@ -30,11 +30,37 @@ const LIVE_DIRECTORY_URL = process.env.LIVE_DIRECTORY_URL || 'https://stembotix-
 const PORT = process.env.PORT || 3000;
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-  res.end('🚀 STEMbotix Telegram AI Bot is Running 24/7 in the Cloud!\n');
+  res.end(`🚀 STEMbotix Telegram AI Bot is Running 24/7!\nStatus: ${botState.isSleeping ? '💤 SLEEP MODE' : '⚡ AWAKE & LISTENING'}\n`);
 });
 server.listen(PORT, () => {
   console.log(`🌐 24/7 Health Server active on port ${PORT}`);
 });
+
+// Self-Ping Keepalive to prevent Render from going to sleep
+const SELF_PING_URL = process.env.RENDER_EXTERNAL_URL || 'https://stembotix-telegram-bot.onrender.com';
+setInterval(() => {
+  try {
+    http.get(SELF_PING_URL, (res) => {}).on('error', () => {});
+  } catch (e) {}
+}, 5 * 60 * 1000); // Ping every 5 minutes
+
+// Bot State Management (Sleep / Wake toggle)
+const STATE_FILE = path.join(__dirname, 'bot-state.json');
+let botState = { isSleeping: false };
+try {
+  if (fs.existsSync(STATE_FILE)) {
+    botState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+  }
+} catch (e) {
+  botState = { isSleeping: false };
+}
+
+function setBotSleepState(sleeping) {
+  botState.isSleeping = !!sleeping;
+  try {
+    fs.writeFileSync(STATE_FILE, JSON.stringify(botState, null, 2), 'utf8');
+  } catch (e) {}
+}
 
 if (!TELEGRAM_BOT_TOKEN) {
   console.error('\n❌ ERROR: TELEGRAM_BOT_TOKEN is missing in .env file!');
@@ -318,6 +344,7 @@ let knownSubmissionIds = new Set();
 let isInitialSubmissionsLoad = true;
 
 async function checkAndNotifyNewSubmissions() {
+  if (botState.isSleeping) return; // Mute notifications during Sleep Mode
   try {
     const subs = await fetchAllSubmissionsFromFirestore();
     if (isInitialSubmissionsLoad) {
@@ -752,39 +779,82 @@ async function sendChunkedReport(chatId, reviews, successCount) {
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
+bot.on('polling_error', (error) => {
+  console.warn('Telegram Polling Warning:', error.code || error.message);
+});
+
+bot.on('error', (error) => {
+  console.error('Telegram Bot General Error:', error.message);
+});
+
 console.log('\n======================================================');
 console.log('🚀 STEMbotix Telegram AI Bot is RUNNING & LISTENING!');
 console.log('⚡ Real-time Submission alerts with Screenshots active!');
 console.log('======================================================\n');
 
-// Start / Help Command
-bot.onText(/\/start|\/help/, (msg) => {
+function getMainMenuKeyboard() {
+  if (botState.isSleeping) {
+    return {
+      inline_keyboard: [
+        [{ text: '⚡ Wake Up Bot', callback_data: 'cmd_wake' }],
+        [{ text: '🌐 Live Directory', url: LIVE_DIRECTORY_URL }]
+      ]
+    };
+  }
+  return {
+    inline_keyboard: [
+      [
+        { text: '📊 Reviews Report', callback_data: 'cmd_report' },
+        { text: '📬 View Submissions', callback_data: 'cmd_subs' }
+      ],
+      [
+        { text: '💤 Sleep Bot', callback_data: 'cmd_sleep' },
+        { text: '🗑️ Delete All', callback_data: 'cmd_delete_all_prompt' }
+      ],
+      [
+        { text: '🌐 Live Directory', url: LIVE_DIRECTORY_URL }
+      ]
+    ]
+  };
+}
+
+// Start / Help / Wake Command
+bot.onText(/\/start|\/help|\/wake|\/resume|\/unmute/, (msg) => {
   const chatId = msg.chat.id;
   registerAdminChat(chatId);
+  setBotSleepState(false);
 
   bot.sendMessage(
     chatId,
-    `🤖 *Welcome to STEMbotix AI Review & Submission Manager!*\n\n` +
-    `⚡ *Real-Time Features Active:*\n` +
-    `1. 📬 *Instant Submission Alerts*: Whenever an employee submits proof on the website, you receive full details + Screenshot proofs right here!\n` +
-    `2. 📄 *Bulk Review Upload*: Drop any PDF, Word, Excel, or Text file to auto-assign.\n` +
+    `🚀 *STEMbotix AI Bot is AWAKE & ACTIVE!*\n\n` +
+    `⚡ *Real-Time Features Live:*\n` +
+    `1. 📬 *Instant Submission Alerts*: Employee proofs + Screenshots live direct to Telegram!\n` +
+    `2. 📄 *Bulk Review Upload*: Drop any PDF, Word, Excel, or Text file.\n` +
     `3. ✏️ *Update Review*: Say *"Divy ka review update karde: Blockzie ★★★★★ new text"*\n` +
     `4. 📊 *Stats & Reports*: Ask *"kitne review add huye"* or *"submissions dikhao"*\n` +
-    `5. 🗑️ *Delete Reviews*: Say *"all review delete karde"* or *"delete review of [Name]"*`,
+    `5. 💤 *Sleep Bot*: Say *"sleep me jaa"* or type **/sleep** anytime to pause!`,
     {
       parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '📊 Reviews Report', callback_data: 'cmd_report' },
-            { text: '📬 View Submissions', callback_data: 'cmd_subs' }
-          ],
-          [
-            { text: '🗑️ Delete All Reviews', callback_data: 'cmd_delete_all_prompt' },
-            { text: '🌐 Live Directory', url: LIVE_DIRECTORY_URL }
-          ]
-        ]
-      }
+      reply_markup: getMainMenuKeyboard()
+    }
+  );
+});
+
+// Sleep / Pause Command
+bot.onText(/\/sleep|\/pause|\/mute/, (msg) => {
+  const chatId = msg.chat.id;
+  registerAdminChat(chatId);
+  setBotSleepState(true);
+
+  bot.sendMessage(
+    chatId,
+    `💤 *Bot has entered Sleep Mode!*\n\n` +
+    `• Review processing is paused.\n` +
+    `• Real-time submission notifications are muted.\n\n` +
+    `_Wapas activate karne ke liye **/start** ya **/wake** send karein ya button dabayein._`,
+    {
+      parse_mode: 'Markdown',
+      reply_markup: getMainMenuKeyboard()
     }
   );
 });
@@ -829,7 +899,27 @@ bot.on('callback_query', async (query) => {
   try {
     await bot.answerCallbackQuery(query.id);
 
-    if (data === 'cmd_report') {
+    if (data === 'cmd_wake') {
+      setBotSleepState(false);
+      await bot.sendMessage(
+        chatId,
+        `⚡ *Bot WAKE UP ho gaya hai & 24/7 ACTIVE hai!*\nAb reviews upload ya commands use kar sakte hain.`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: getMainMenuKeyboard()
+        }
+      );
+    } else if (data === 'cmd_sleep') {
+      setBotSleepState(true);
+      await bot.sendMessage(
+        chatId,
+        `💤 *Bot Sleep Mode me chala gaya hai.*\nUthne ke liye **/start** ya **/wake** bhejein.`,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: getMainMenuKeyboard()
+        }
+      );
+    } else if (data === 'cmd_report') {
       await sendDatabaseStatusReport(chatId);
     } else if (data === 'cmd_subs') {
       await sendSubmissionsSummaryReport(chatId);
@@ -880,6 +970,19 @@ bot.on('callback_query', async (query) => {
 bot.on('document', async (msg) => {
   const chatId = msg.chat.id;
   registerAdminChat(chatId);
+
+  if (botState.isSleeping) {
+    await bot.sendMessage(
+      chatId,
+      `💤 *Bot Sleep Mode me hai!*\n\nDocument process karne ke liye bot ko wapas wake karein.\n\nType **/start** ya **/wake** ya niche button dabayein:`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: getMainMenuKeyboard()
+      }
+    );
+    return;
+  }
+
   const doc = msg.document;
 
   try {
@@ -952,6 +1055,47 @@ bot.on('message', async (msg) => {
   const lowerText = rawText.toLowerCase();
 
   if (!rawText) return;
+
+  // 0. Sleep / Wake NLP Commands
+  const isWakeIntent = /^(?:wake\s*up|uth\s*ja|uth|start|chalu\s*ho\s*ja|chalu\s*kar|on\s*kar|resume|active\s*ho\s*ja|wake)$/i.test(lowerText);
+  if (isWakeIntent) {
+    setBotSleepState(false);
+    await bot.sendMessage(
+      chatId,
+      `⚡ *Bot WAKE UP ho gaya hai & 24/7 ACTIVE hai!*\nAb reviews upload ya commands use kar sakte hain.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: getMainMenuKeyboard()
+      }
+    );
+    return;
+  }
+
+  const isSleepIntent = /(?:sleep\s*me\s*ja|sleep\s*ho\s*ja|so\s*ja|sleep\s*kar|bot\s*sleep|pause|mute|bandh\s*ho\s*ja|band\s*ho\s*ja|sleep)/i.test(lowerText);
+  if (isSleepIntent) {
+    setBotSleepState(true);
+    await bot.sendMessage(
+      chatId,
+      `💤 *Bot Sleep Mode me chala gaya hai.*\n\n• Reviews processing & alerts pause ho gaye hain.\n• Uthne ke liye **/start** ya **/wake** bhejein ya niche button dabayein.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: getMainMenuKeyboard()
+      }
+    );
+    return;
+  }
+
+  if (botState.isSleeping) {
+    await bot.sendMessage(
+      chatId,
+      `💤 *Bot abhi Sleep Mode me hai.*\n\nBot ko activate karne ke liye **/start** ya **/wake** send karein, ya niche button dabayein:`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: getMainMenuKeyboard()
+      }
+    );
+    return;
+  }
 
   // 1. Check for "Delete All Reviews" intent
   const isDeleteAll =
